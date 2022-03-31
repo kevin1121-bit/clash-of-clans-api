@@ -68,7 +68,7 @@ function HomePage() {
   const handleSearchApi = (values: IValues) => {
     dispatch({ type: "IS_LOADING", payload: true });
     axios({
-      url: "http://localhost:8090/",
+      url: process.env.REACT_APP_URL_PROXY,
       method: "GET",
       params: {
         typeFilter: values.typeFilter,
@@ -76,6 +76,7 @@ function HomePage() {
       },
     })
       .then((response) => {
+        console.log(response);
         if (response?.data?.status === 400) {
           dispatch({
             type: "IS_ERROR",
