@@ -67,12 +67,13 @@ function HomePage() {
 
   const handleSearchApi = (values: IValues) => {
     dispatch({ type: "IS_LOADING", payload: true });
+
     axios({
       url: process.env.REACT_APP_URL_PROXY,
-      method: "GET",
-      params: {
-        typeFilter: values.typeFilter,
-        value: values.valueText,
+      method: "POST",
+      data: {
+        'typeFilter': values.typeFilter,
+        'value': values.valueText
       },
     })
       .then((response) => {
