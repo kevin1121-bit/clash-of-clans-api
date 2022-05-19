@@ -1,12 +1,8 @@
-import axios from "axios";
-import { useReducer } from "react";
+
 import { Formik } from "formik";
 import Card from "../card/card";
+import useApi from "../hooks/useApi";
 
-interface IValues {
-  typeFilter: string;
-  valueText: string | number;
-}
 
 interface IClans {
   name: string;
@@ -16,86 +12,11 @@ interface IClans {
   badgeUrls: { small: string };
   clanPoints: number;
 }
-interface IInitialValues {
-  dataApi: IClans[];
-  error: { isError: boolean; message: string };
-  loading: boolean;
-}
 
-const initialValues: IInitialValues = {
-  dataApi: [],
-  error: { isError: false, message: "" },
-  loading: false,
-};
 
-type ActionType =
-  | { type: "DATA_API"; payload: [] }
-  | { type: "IS_ERROR"; payload: { error: boolean; message: string } }
-  | { type: "IS_LOADING"; payload: boolean };
-
-const reducerForm = (state: IInitialValues, action: ActionType) => {
-  switch (action.type) {
-    case "DATA_API":
-      return {
-        ...state,
-        dataApi: action.payload,
-        error: { isError: false, message: "" },
-        loading: false,
-      };
-
-    case "IS_ERROR":
-      return {
-        ...state,
-        dataApi: [],
-        error: {
-          isError: action.payload.error,
-          message: action.payload.message,
-        },
-      };
-    case "IS_LOADING":
-      return {
-        ...state,
-        loading: action.payload,
-      };
-    default:
-      return state;
-  }
-};
 
 function HomePage() {
-  const [stateDataApi, dispatch] = useReducer(reducerForm, initialValues);
-
-  const handleSearchApi = (values: IValues) => {
-    dispatch({ type: "IS_LOADING", payload: true });
-
-    axios({
-      url: process.env.REACT_APP_URL_PROXY,
-      method: "POST",
-      data: {
-        'typeFilter': values.typeFilter,
-        'value': values.valueText
-      },
-    })
-      .then((response) => {
-        console.log(response);
-        if (response?.data?.status === 400) {
-          dispatch({
-            type: "IS_ERROR",
-            payload: { error: true, message: "Invalid search parameter" },
-          });
-          dispatch({ type: "IS_LOADING", payload: false });
-        } else if (response.status === 200) {
-          dispatch({ type: "DATA_API", payload: response.data.items });
-        }
-      })
-      .catch((e) => {
-        console.log(e.message);
-        dispatch({
-          type: "IS_ERROR",
-          payload: { error: true, message: "Invalid search parameter" },
-        });
-      });
-  };
+  const api = useApi();
 
   return (
     <div className='container'>
@@ -112,7 +33,7 @@ function HomePage() {
           return errors;
         }}
         onSubmit={(values, { setSubmitting }) => {
-          handleSearchApi(values);
+          api.handleSearchApi(values);
           setSubmitting(false);
         }}>
         {({
@@ -171,10 +92,10 @@ function HomePage() {
         )}
       </Formik>
       <div className='text-center'>
-        <h4>{stateDataApi.error.isError && stateDataApi.error.message}</h4>
+        <h4>{api.stateDataApi.error.isError && api.stateDataApi.error.message}</h4>
       </div>
       <div>
-        {stateDataApi.loading ? (
+        {api.stateDataApi.loading ? (
           <div className='text-center'>
             <div className='spinner-border' role='status'>
               <h4 className='visually-hidden'>Loading...</h4>
@@ -182,9 +103,9 @@ function HomePage() {
           </div>
         ) : (
           <div className='row'>
-            {stateDataApi.dataApi &&
-              stateDataApi.dataApi.length !== 0 &&
-              stateDataApi.dataApi.map((value: IClans, index: any) => (
+            {api.stateDataApi.dataApi &&
+              api.stateDataApi.dataApi.length !== 0 &&
+              api.stateDataApi.dataApi.map((value: IClans, index: any) => (
                 <div className='col-md-3' key={index.toString()}>
                   <div className='card-group'>
                     <Card
